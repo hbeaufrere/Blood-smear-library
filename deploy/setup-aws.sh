@@ -71,7 +71,10 @@ OAI_RESULT=$(aws cloudfront create-cloud-front-origin-access-identity \
         \"Comment\": \"Blood Smear Library OAI\"
     }" --output json)
 OAI_ID=$(echo "$OAI_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['CloudFrontOriginAccessIdentity']['Id'])")
+OAI_CANONICAL_USER=$(echo "$OAI_RESULT" | python3 -c "import sys,json; print(json.load(sys.stdin)['CloudFrontOriginAccessIdentity']['S3CanonicalUserId'])")
 echo "  OAI created: $OAI_ID"
+echo "  Waiting for OAI to propagate..."
+sleep 5
 
 # --- Step 3: Grant CloudFront access to S3 buckets ---
 echo "Step 3: Setting bucket policies for CloudFront access..."
@@ -91,7 +94,7 @@ for BUCKET in "$BUCKET_RAW" "$BUCKET_PROCESSED"; do
             "Sid": "AllowCloudFrontOAI",
             "Effect": "Allow",
             "Principal": {
-                "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity $OAI_ID"
+                "CanonicalUser": "$OAI_CANONICAL_USER"
             },
             "Action": "s3:GetObject",
             "Resource": "arn:aws:s3:::$BUCKET/*"
