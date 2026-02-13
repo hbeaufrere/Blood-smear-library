@@ -15,7 +15,7 @@
 set -e
 
 AWS_REGION="${AWS_REGION:-us-west-1}"
-INSTANCE_TYPE="${INSTANCE_TYPE:-t2.micro}"
+INSTANCE_TYPE="${INSTANCE_TYPE:-t3.micro}"
 KEY_NAME="${KEY_NAME:-blood-smear-key}"
 SECURITY_GROUP_NAME="blood-smear-sg"
 
