@@ -44,12 +44,6 @@ for BUCKET in "$BUCKET_RAW" "$BUCKET_PROCESSED"; do
         echo "  Created bucket: $BUCKET"
     fi
 
-    # Block public access (private buckets, served via CloudFront)
-    aws s3api put-public-access-block --bucket "$BUCKET" \
-        --public-access-block-configuration \
-        "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
-    echo "  Public access blocked for: $BUCKET"
-
     # Enable CORS for the bucket
     aws s3api put-bucket-cors --bucket "$BUCKET" --cors-configuration '{
         "CORSRules": [
@@ -102,6 +96,16 @@ EOF
 )
     aws s3api put-bucket-policy --bucket "$BUCKET" --policy "$POLICY"
     echo "  Bucket policy set for: $BUCKET"
+done
+
+# --- Step 3b: Block public access (after policies are set) ---
+echo "Step 3b: Blocking public access on buckets..."
+
+for BUCKET in "$BUCKET_RAW" "$BUCKET_PROCESSED"; do
+    aws s3api put-public-access-block --bucket "$BUCKET" \
+        --public-access-block-configuration \
+        "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+    echo "  Public access blocked for: $BUCKET"
 done
 
 echo ""
