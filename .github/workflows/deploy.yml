@@ -1,0 +1,50 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+            cd ~/Blood-smear-library
+
+            echo "=== Pulling latest code ==="
+            git pull origin main
+
+            echo "=== Rebuilding and restarting containers ==="
+            export VITE_API_URL="${{ secrets.VITE_API_URL }}"
+            docker compose up -d --build --remove-orphans
+
+            echo "=== Waiting for services to start ==="
+            sleep 15
+
+            echo "=== Health check: frontend ==="
+            curl -f --retry 3 --retry-delay 5 http://localhost:80 || {
+              echo "Frontend health check failed"
+              docker compose logs frontend --tail 20
+              exit 1
+            }
+
+            echo "=== Health check: backend ==="
+            curl -f --retry 3 --retry-delay 5 http://localhost:3000/api/species || {
+              echo "Backend health check failed"
+              docker compose logs backend --tail 20
+              exit 1
+            }
+
+            echo "=== Deployment successful ==="
+            docker compose ps
