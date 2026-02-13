@@ -76,6 +76,12 @@ echo "  OAI created: $OAI_ID"
 # --- Step 3: Grant CloudFront access to S3 buckets ---
 echo "Step 3: Setting bucket policies for CloudFront access..."
 
+# Remove any existing public access block so we can set the policy
+for BUCKET in "$BUCKET_RAW" "$BUCKET_PROCESSED"; do
+    aws s3api delete-public-access-block --bucket "$BUCKET" 2>/dev/null || true
+    echo "  Cleared public access block for: $BUCKET"
+done
+
 for BUCKET in "$BUCKET_RAW" "$BUCKET_PROCESSED"; do
     POLICY=$(cat <<EOF
 {
