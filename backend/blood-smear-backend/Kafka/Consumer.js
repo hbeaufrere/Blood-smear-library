@@ -9,15 +9,20 @@ const { checkIfTheImagesAreMultiSceneForWholeSlide,convertToDZI,streamFullSlideI
 // CloudFront configuration
 const CLOUD_FRONT_DOMAIN_RAW = process.env.CLOUD_FRONT_DOMAIN_RAW || process.env.CLOUD_FRONT_DOMAIN;
 
-// 1. Connect to MongoDB
+// 1. Connect to MongoDB using environment variable
 mongoose.connect(
-  "mongodb+srv://skhsingh:kJcy8ZWBATFV6uz8@cluster0.2c0gaiq.mongodb.net/Blood_Smear_Database?retryWrites=true&w=majority&appName=Cluster0"
+  process.env.MONGO_URI || "",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
 );
 
-// 2. Kafka setup
+// 2. Kafka setup (configurable via KAFKA_BROKERS env var)
+const kafkaBrokers = (process.env.KAFKA_BROKERS || "localhost:9092").split(",");
 const kafka = new Kafka({
   clientId: "blood-smear-worker",
-  brokers: ["localhost:9092"], // Adjust if Kafka is remote
+  brokers: kafkaBrokers,
 });
 
 // 3. Create consumer in a group

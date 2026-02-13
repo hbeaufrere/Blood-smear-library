@@ -5,6 +5,8 @@ import WholeSlideViewer from '../Component/WholeSlideViewer';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import './UploadedContentPage.css';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 const UploadedContentPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -189,7 +191,7 @@ const UploadedContentPage = () => {
     const fetchLatestData = async () => {
       if (jobId) {
         try {
-          const response = await fetch(`http://localhost:3000/api/uploads/${jobId}`);
+          const response = await fetch(`${API_URL}/api/uploads/${jobId}`);
           const result = await response.json();
           
           if (response.ok && result.success) {

@@ -7,6 +7,8 @@ import UTIF from 'utif';
 import { convertTiffToPng } from '../util/tiffConverter';
 import WholeSlideViewer from '../Component/WholeSlideViewer';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 const AdminUploadPage = () => {
   const navigate = useNavigate();
   const [uploadType, setUploadType] = useState('fullSlide');
@@ -307,7 +309,7 @@ const AdminUploadPage = () => {
           }
         });
         // Call the actual upload API
-        const response = await fetch('http://localhost:3000/api/upload/admin', {
+        const response = await fetch(`${API_URL}/api/upload/admin`, {
           method: 'POST',
           body: formDataToSend
         });
@@ -332,7 +334,7 @@ const AdminUploadPage = () => {
             pollCount++;
             
             try {
-              const uploadResponse = await fetch(`http://localhost:3000/api/uploads/${job_id}`);
+              const uploadResponse = await fetch(`${API_URL}/api/uploads/${job_id}`);
               const uploadResult = await uploadResponse.json();
               
               console.log(`Polling attempt ${pollCount}: Status = ${uploadResult.data?.status}`, uploadResult);
@@ -483,7 +485,7 @@ const AdminUploadPage = () => {
     
     setIsCheckingStatus(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/uploads/${currentJobId}`);
+      const response = await fetch(`${API_URL}/api/uploads/${currentJobId}`);
       const result = await response.json();
       
       if (response.ok && result.success) {

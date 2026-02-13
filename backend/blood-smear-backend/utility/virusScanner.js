@@ -25,8 +25,8 @@ async function initClamAV() {
     quarantineInfected: false,
     clamdscan: {
       socket: false,
-      host: "127.0.0.1",
-      port: 3310,
+      host: process.env.CLAMAV_HOST || "127.0.0.1",
+      port: parseInt(process.env.CLAMAV_PORT) || 3310,
       timeout: 120000,
     },
   });

@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import UCDavisNavbar from '../Component/UCDavisNavbar';
 import './JobStatusPage.css';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 const JobStatusPage = () => {
   const location = useLocation();
   const [searchJobId, setSearchJobId] = useState('');
@@ -22,7 +24,7 @@ const JobStatusPage = () => {
     setIsSearching(true);
     
     try {
-      const response = await fetch(`http://localhost:3000/api/uploads/${searchJobId}`);
+      const response = await fetch(`${API_URL}/api/uploads/${searchJobId}`);
       const result = await response.json();
       
       if (response.ok && result.success) {

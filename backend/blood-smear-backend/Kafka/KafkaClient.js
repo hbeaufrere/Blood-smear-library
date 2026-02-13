@@ -1,8 +1,10 @@
 const { Kafka } = require("kafkajs");
+require("dotenv").config();
 
+const kafkaBrokers = (process.env.KAFKA_BROKERS || "localhost:9092").split(",");
 const kafka = new Kafka({
   clientId: "blood-smear-app",
-  brokers: ["localhost:9092"], // <-- broker can be your local machine or a remote machine
+  brokers: kafkaBrokers,
 });
 
 const producer = kafka.producer();

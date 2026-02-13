@@ -31,3 +31,9 @@ dist/
 build/
 */dist/
 */build/
+
+# SSH keys from deployment
+*.pem
+
+# Temporary DZI processing files
+temp_dzi/

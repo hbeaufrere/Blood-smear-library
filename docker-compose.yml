@@ -1,0 +1,79 @@
+##############################################
+# Blood Smear Library - Full Stack Deployment
+# Usage:
+#   docker compose up -d          # Start all services
+#   docker compose logs -f        # View logs
+#   docker compose down           # Stop all services
+##############################################
+
+services:
+  # --- Infrastructure Services ---
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    restart: unless-stopped
+
+  clamav:
+    image: mkodockx/docker-clamav:latest
+    restart: unless-stopped
+
+  # --- Application Services ---
+
+  backend:
+    build:
+      context: ./backend/blood-smear-backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/blood-smear-backend/.env
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - CLAMAV_HOST=clamav
+      - CLAMAV_PORT=3310
+    depends_on:
+      - kafka
+      - clamav
+    restart: unless-stopped
+
+  consumer:
+    build:
+      context: ./backend/blood-smear-backend
+      dockerfile: Dockerfile.consumer
+    env_file:
+      - ./backend/blood-smear-backend/.env
+    environment:
+      - KAFKA_BROKERS=kafka:9092
+      - CLAMAV_HOST=clamav
+      - CLAMAV_PORT=3310
+      - STORAGE_PATH=/app
+    depends_on:
+      - kafka
+      - clamav
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend/blood-smear-frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:3000}
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
